@@ -8,19 +8,20 @@ firstScript.addEventListener("load", onLoadScript)
 
 function onLoadScript() {
   if (YT) {
-    new YT.Player("aravind", {
+    new YT.Player("video-container", {
       height: "500",
       width: "850",
       videoId,
-      events: {
-        onReady: (event) => {
-            document.title = event.target.videoTitle ;
-            extractVideoDetails(videoId);
-            fetchStats(videoId)
+        events: {
+          onReady: (event) => {
+            console.log(event);
+              document.title = event.target.videoTitle ;
+              extractVideoDetails(videoId);
+              fetchStats(videoId)
+          }
         }
-      }
     });
-  }
+}
 }
 
 const statsContainer = document.getElementsByClassName("video-details")[0] ;
@@ -33,7 +34,7 @@ async function extractVideoDetails(videoId){
         let response = await fetch(endpoint);
         let result = await response.json();
         console.log(result, "comments")
-        renderComments(result.items);
+        // renderComments(result.items);
     }
     catch(error){
         console.log(`Error occured`, error)
@@ -51,12 +52,13 @@ async function  fetchStats(videoId){
         const result = await response.json();
         const item = result.items[0] ;
         const title = document.getElementById("title");
+        // const channelLogoUrl = item.snippet.thumbnails.default.url;
         title.innerText = item.snippet.title ;
         title.style.color = "white";
         title.style.fontSize = "20px"
         statsContainer.innerHTML = `
         <div class="profile">
-                <img src="https://i.ytimg.com/vi/D-qj0L68RhQ/default.jpg" class="channel-logo" alt="">
+                <img src="${item.snippet.thumbnails.default.url}" class="channel-logo" alt="">
                 <div class="owner-details">
                     <span style="color: white ">${item.snippet.channelTitle}</span>
                     <span>20 subscribers</span>
@@ -87,77 +89,83 @@ async function  fetchStats(videoId){
 
  
 
-function renderComments(commentsList) {
-    const commentsContainer = document.getElementById("comments-container"); 
-    // commentsContainer.
-    for(let i =  0; i < commentsList.length ; i++) {
-        let comment = commentsList[i] ;
-        const topLevelComment = comment.snippet.topLevelComment ;
+// function renderComments(commentsList) {
+//     const commentsContainer = document.getElementById("comments-container"); 
+//     // commentsContainer.
+//     for(let i =  0; i < commentsList.length ; i++) {
+//         let comment = commentsList[i] ;
+//         const topLevelComment = comment.snippet.topLevelComment ;
 
-        let commentElement = document.createElement("div");
-        commentElement.className = "comment" ;
-        commentElement.innerHTML = `
-                <img src="${topLevelComment.snippet.authorProfileImageUrl}" alt="">
-                <div class="comment-right-half">
-                    <b>${topLevelComment.snippet.authorDisplayName
-                    }</b>
-                    <p>${topLevelComment.snippet.textOriginal}</p>
-                    <div style="display: flex; gap: 20px">
-                        <div class="like">
-                            <span class="material-icons">thumb_up</span>
-                            <span>${topLevelComment.snippet.likeCount}</span>
-                        </div>
-                        <div class="like">
-                            <span class="material-icons">thumb_down</span>
-                        </div>
-                        <button class="reply" onclick="loadComments(this)" data-comment-id="${topLevelComment.id}">
-                            Replies(${comment.snippet.totalReplyCount})
-                        </button>
-                    </div>
-                </div>
-            `;
-        commentsContainer.append(commentElement);
+//         let commentElement = document.createElement("div");
+//         commentElement.className = "comment" ;
+//         commentElement.innerHTML = `
+//                 <img src="${topLevelComment.snippet.authorProfileImageUrl}" alt="">
+//                 <div class="comment-right-half">
+//                     <b>${topLevelComment.snippet.authorDisplayName
+//                     }</b>
+//                     <p>${topLevelComment.snippet.textOriginal}</p>
+//                     <div style="display: flex; gap: 20px">
+//                         <div class="like">
+//                             <span class="material-icons">thumb_up</span>
+//                             <span>${topLevelComment.snippet.likeCount}</span>
+//                         </div>
+//                         <div class="like">
+//                             <span class="material-icons">thumb_down</span>
+//                         </div>
+//                         <button class="reply" onclick="loadComments(this)" data-comment-id="${topLevelComment.id}">
+//                             Replies(${comment.snippet.totalReplyCount})
+//                         </button>
+//                     </div>
+//                 </div>
+//             `;
+//         commentsContainer.append(commentElement);
 
-    }
-}
+//     }
+// }
 
 // for Comments 
-async function loadComments(element){
-    const commentId = element.getAttribute("data-comment-id");
-    console.log(commentId)
-    // let endpoint = `https://www.googleapis.com/youtube/v3/comments?part=snippet&parentId=${commentId}&key=${apiKey}`;
-    let endpoint = `https://youtube.googleapis.com/youtube/v3/comments?part=snippet&parentId=${commentId}&key=${apiKey}`;
+// async function loadComments(element){
+//     const commentId = element.getAttribute("data-comment-id");
+//     console.log(commentId)
+//     // let endpoint = `https://www.googleapis.com/youtube/v3/comments?part=snippet&parentId=${commentId}&key=${apiKey}`;
+//     let endpoint = `https://youtube.googleapis.com/youtube/v3/comments?part=snippet&parentId=${commentId}&key=${apiKey}`;
 
-    try {
-       const response =  await fetch(endpoint);
-        const result = await response.json();
-        const parentNode = element.parentNode.parentNode ;
-        let commentsList = result.items ;
-        for(let i = 0 ; i < commentsList.length ; i++) {
-            let replyComment =  commentsList[i] ; 
-            let commentNode = document.createElement("div");
-            commentNode.className = "comment comment-reply";
+//     try {
+//        const response =  await fetch(endpoint);
+//         const result = await response.json();
+//         const parentNode = element.parentNode.parentNode ;
+//         let commentsList = result.items ;
+//         for(let i = 0 ; i < commentsList.length ; i++) {
+//             let replyComment =  commentsList[i] ; 
+//             let commentNode = document.createElement("div");
+//             commentNode.className = "comment comment-reply";
 
-            commentNode.innerHTML = `
-                        <img src="${replyComment.snippet.authorProfileImageUrl}" alt="">
-                        <div class="comment-right-half">
-                            <b>${replyComment.snippet.authorDisplayName}</b>
-                            <p>${replyComment.snippet.textOriginal}</p>
-                            <div class="options">
-                                <div class="like">
-                                    <span class="material-icons">thumb_up</span>
-                                    <span>${replyComment.snippet.likeCount}</span>
-                                </div>
-                                <div class="like">
-                                    <span class="material-icons">thumb_down</span>
-                                </div>
-                            </div>
-                    `;
+//             commentNode.innerHTML = `
+//                         <img src="${replyComment.snippet.authorProfileImageUrl}" alt="">
+//                         <div class="comment-right-half">
+//                             <b>${replyComment.snippet.authorDisplayName}</b>
+//                             <p>${replyComment.snippet.textOriginal}</p>
+//                             <div class="options">
+//                                 <div class="like">
+//                                     <span class="material-icons">thumb_up</span>
+//                                     <span>${replyComment.snippet.likeCount}</span>
+//                                 </div>
+//                                 <div class="like">
+//                                     <span class="material-icons">thumb_down</span>
+//                                 </div>
+//                             </div>
+//                     `;
 
-                parentNode.append(commentNode);
-        }
-    }   
-    catch(error){
+//                 parentNode.append(commentNode);
+//         }
+//     }   
+//     catch(error){
 
-    }
-}
+//     }
+// }
+
+
+
+// let cookieString = document.cookie;
+// let videoId = cookieString.split("=")[1];
+// console.log(videoId);
